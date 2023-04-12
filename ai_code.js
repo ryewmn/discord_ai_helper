@@ -1,8 +1,13 @@
+// Description: This is the code for the AI chatbot
+// Author: Ryan Rico
+
+
+// Importing the required modules
 require('dotenv/config');
 const { Client, IntentsBitField } = require('discord.js');
 const { Configuration, OpenAIApi } = require('openai');
 
-
+// Creating the client
 const client = new Client({
     intents: [
         IntentsBitField.Flags.Guilds,
@@ -12,7 +17,7 @@ const client = new Client({
     ],
 });
 
-
+// When the bot is ready
 client.on('ready', async () => {
     console.log('The bot is online!');
     // Create a slash command
@@ -25,11 +30,14 @@ client.on('ready', async () => {
     const guild = await client.guilds.fetch(guildId);
     await guild.commands.create(data);
 })
+// When the bot receives a message
 const configuration = new Configuration({
     apiKey: process.env.API_KEY,
 });
+// Create a new OpenAI API instance
 const openai = new OpenAIApi(configuration);
 
+// When the bot receives a message
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) return;
 
@@ -40,7 +48,7 @@ client.on('interactionCreate', async (interaction) => {
         });
 
         interaction.reply(`New chat thread created: ${thread.name}`);
-
+//       await thread.send('Hello! I am a friendly chatbot. How can I help you?');
         const messageCollectorFilter = (m) => !m.author.bot && m.author.id === interaction.user.id;
         const messageCollector = thread.createMessageCollector({ filter: messageCollectorFilter, time: 600000 }); // Collect messages for 10 minutes (600000 ms)
 
@@ -58,7 +66,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 });
 
-
+// When the bot receives a message
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
     if (!message.thread) return;
@@ -66,7 +74,7 @@ client.on('messageCreate', async (message) => {
     const chatResponse = await getChatResponse(message.channel, message.content, message.author.id);
     await message.reply(chatResponse);
 });
-
+//  Get the chat response
 async function getChatResponse(channel, userMessage, authorId) {
     let conversationLog = [{ role: 'system', content: 'You are a friendly chatbot.' }];
 
@@ -102,6 +110,6 @@ async function getChatResponse(channel, userMessage, authorId) {
         return "Error: Unable to process your message";
     }
 }
-
+// Login the bot
 client.login(process.env.TOKEN);
 
